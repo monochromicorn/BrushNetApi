@@ -48,9 +48,9 @@ base_model_path = "data/ckpt/realisticVisionV60B1_v51VAE"
 # input brushnet ckpt path
 brushnet_path = "data/ckpt/segmentation_mask_brushnet_ckpt"
 
-brushnet = BrushNetModel.from_pretrained(brushnet_path, torch_dtype=torch.float16)
+brushnet = BrushNetModel.from_pretrained(brushnet_path, torch_dtype=torch.float16, device=DEVICE)
 pipe = StableDiffusionBrushNetPipeline.from_pretrained(
-    base_model_path, brushnet=brushnet, torch_dtype=torch.float16, low_cpu_mem_usage=False
+    base_model_path, brushnet=brushnet, torch_dtype=torch.float16, low_cpu_mem_usage=False, device=DEVICE
 )
 
 # speed up diffusion process with faster scheduler and memory optimization
@@ -58,7 +58,7 @@ pipe.scheduler = UniPCMultistepScheduler.from_config(pipe.scheduler.config)
 # remove following line if xformers is not installed or when using Torch 2.0.
 # pipe.enable_xformers_memory_efficient_attention()
 # memory optimization.
-pipe.enable_model_cpu_offload()
+pipe.enable_model_cpu_offload(device=DEVICE)
 
 def resize_image(input_image, resolution):
     H, W, C = input_image.shape
