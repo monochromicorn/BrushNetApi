@@ -49,9 +49,9 @@ caption="A cake on the table."
 # conditioning scale
 paintingnet_conditioning_scale=1.0
 
-brushnet = BrushNetModel.from_pretrained(brushnet_path, torch_dtype=torch.float16)
+brushnet = BrushNetModel.from_pretrained(brushnet_path, torch_dtype=torch.float32)
 pipe = StableDiffusionBrushNetPipeline.from_pretrained(
-    base_model_path, brushnet=brushnet, torch_dtype=torch.float16, low_cpu_mem_usage=False
+    base_model_path, brushnet=brushnet, torch_dtype=torch.float32, low_cpu_mem_usage=False
 )
 
 # speed up diffusion process with faster scheduler and memory optimization
