@@ -273,7 +273,6 @@ with block:
         for p, l in sel_pix:
             points.append(p)
             labels.append(l)
-        mobile_predictor=mobile_predictor
         mobile_predictor.set_image(img if isinstance(img, np.ndarray) else np.array(img))
         with torch.no_grad():
             masks, _, _ = mobile_predictor.predict(point_coords=np.array(points), point_labels=np.array(labels), multimask_output=False)
