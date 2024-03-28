@@ -2,10 +2,10 @@
 # -*- coding: utf-8 -*-
 import os
 
-print("Installing correct gradio version...")
-os.system("pip uninstall -y gradio")
-os.system("pip install gradio==3.50.0")
-print("Installing Finished!")
+#print("Installing correct gradio version...")
+#os.system("pip uninstall -y gradio")
+#os.system("pip install gradio==3.50.0")
+#print("Installing Finished!")
 
 ##!/usr/bin/python3
 # -*- coding: utf-8 -*-
@@ -19,7 +19,13 @@ import torch
 from diffusers import StableDiffusionBrushNetPipeline, BrushNetModel, UniPCMultistepScheduler
 import random
 
-mobile_sam = sam_model_registry['vit_h'](checkpoint='data/ckpt/sam_vit_h_4b8939.pth').to("cuda")
+if torch.backends.mps.is_available():
+  DEVICE = "mps"
+elif torch.cuda.is_available():
+  DEVICE = "cuda"
+else:
+  DEVICE = "cpu"
+mobile_sam = sam_model_registry['vit_h'](checkpoint='data/ckpt/sam_vit_h_4b8939.pth').to(DEVICE)
 mobile_sam.eval()
 mobile_predictor = SamPredictor(mobile_sam)
 colors = [(255, 0, 0), (0, 255, 0)]
@@ -107,7 +113,7 @@ def process(input_image,
     init_image = Image.fromarray(masked_image.astype(np.uint8)).convert("RGB")
     mask_image = Image.fromarray(original_mask.astype(np.uint8)).convert("RGB")
 
-    generator = torch.Generator("cuda").manual_seed(random.randint(0,2147483647) if randomize_seed else seed)
+    generator = torch.Generator(DEVICE).manual_seed(random.randint(0,2147483647) if randomize_seed else seed)
 
     image = pipe(
         [prompt]*2, 
