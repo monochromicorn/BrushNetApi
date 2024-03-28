@@ -7,6 +7,10 @@ os.system("pip uninstall -y gradio")
 os.system("pip install gradio==3.50.0")
 print("Installing Finished!")
 
+##!/usr/bin/python3
+# -*- coding: utf-8 -*-
+import gradio as gr
+import os
 import cv2
 from PIL import Image
 import numpy as np
@@ -14,7 +18,6 @@ from segment_anything import SamPredictor, sam_model_registry
 import torch
 from diffusers import StableDiffusionBrushNetPipeline, BrushNetModel, UniPCMultistepScheduler
 import random
-import gradio as gr
 
 mobile_sam = sam_model_registry['vit_h'](checkpoint='data/ckpt/sam_vit_h_4b8939.pth').to("cuda")
 mobile_sam.eval()
@@ -33,7 +36,6 @@ image_examples = [
 ]
 
 
-
 # choose the base model here
 base_model_path = "data/ckpt/realisticVisionV60B1_v51VAE"
 # base_model_path = "runwayml/stable-diffusion-v1-5"
@@ -41,17 +43,9 @@ base_model_path = "data/ckpt/realisticVisionV60B1_v51VAE"
 # input brushnet ckpt path
 brushnet_path = "data/ckpt/segmentation_mask_brushnet_ckpt"
 
-# input source image / mask image path and the text prompt
-image_path="examples/brushnet/src/test_image.jpg"
-mask_path="examples/brushnet/src/test_mask.jpg"
-caption="A cake on the table."
-
-# conditioning scale
-paintingnet_conditioning_scale=1.0
-
-brushnet = BrushNetModel.from_pretrained(brushnet_path, torch_dtype=torch.float32)
+brushnet = BrushNetModel.from_pretrained(brushnet_path, torch_dtype=torch.float16)
 pipe = StableDiffusionBrushNetPipeline.from_pretrained(
-    base_model_path, brushnet=brushnet, torch_dtype=torch.float32, low_cpu_mem_usage=False
+    base_model_path, brushnet=brushnet, torch_dtype=torch.float16, low_cpu_mem_usage=False
 )
 
 # speed up diffusion process with faster scheduler and memory optimization
@@ -59,7 +53,7 @@ pipe.scheduler = UniPCMultistepScheduler.from_config(pipe.scheduler.config)
 # remove following line if xformers is not installed or when using Torch 2.0.
 # pipe.enable_xformers_memory_efficient_attention()
 # memory optimization.
-# pipe.enable_model_cpu_offload()
+pipe.enable_model_cpu_offload()
 
 def resize_image(input_image, resolution):
     H, W, C = input_image.shape
@@ -72,6 +66,7 @@ def resize_image(input_image, resolution):
     W = int(np.round(W / 64.0)) * 64
     img = cv2.resize(input_image, (W, H), interpolation=cv2.INTER_LANCZOS4 if k > 1 else cv2.INTER_AREA)
     return img
+
 
 def process(input_image, 
     original_image, 
