@@ -86,7 +86,8 @@ def process(input_image,
     seed, 
     randomize_seed, 
     guidance_scale, 
-    num_inference_steps):
+    num_inference_steps,
+    count):
     if original_image is None:
         raise gr.Error('Please upload the input image')
     if (original_mask is None or len(selected_points)==0) and input_mask is None:
@@ -116,14 +117,14 @@ def process(input_image,
     generator = torch.Generator(DEVICE).manual_seed(random.randint(0,2147483647) if randomize_seed else seed)
 
     image = pipe(
-        [prompt]*2, 
+        [prompt]*count, 
         init_image, 
         mask_image, 
         num_inference_steps=num_inference_steps, 
         guidance_scale=guidance_scale,
         generator=generator,
         brushnet_conditioning_scale=float(control_strength),
-        negative_prompt=[negative_prompt]*2,
+        negative_prompt=[negative_prompt]*count,
     ).images
 
     if blended:
@@ -196,6 +197,13 @@ with block:
                         placeholder="Please input your negative prompt",
                         value='ugly, low quality',lines=1
                     )
+            count = gr.Number(
+                        label="Number of Images",
+                        minimun=1,
+                        value=2,
+                        precision=0,
+                        step=1
+            )
             with gr.Group():
                 with gr.Row():
                     blending = gr.Checkbox(label="Blurred Blending", value=False)
@@ -339,7 +347,7 @@ with block:
         [input_image, original_mask]
     )
 
-    ips=[input_image, original_image, original_mask, input_mask, selected_points, prompt, negative_prompt, blending, invert_mask, control_strength, seed, randomize_seed, guidance_scale, num_inference_steps]
+    ips=[input_image, original_image, original_mask, input_mask, selected_points, prompt, negative_prompt, blending, invert_mask, control_strength, seed, randomize_seed, guidance_scale, num_inference_steps, count]
     run_button.click(fn=process, inputs=ips, outputs=[result_gallery])
 
 
