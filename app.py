@@ -232,7 +232,7 @@ with block:
                         num_inference_steps = gr.Slider(
                             label="Number of inference steps",
                             minimum=1,
-                            maximum=50,
+                            maximum=100,
                             step=1,
                             value=50,
                         )
